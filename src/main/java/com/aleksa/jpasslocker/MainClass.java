@@ -7,26 +7,24 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import javax.swing.*;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.security.Security;
+
+/**
+ * @author Nikolic Aleksa (aleksa.nikolic@htl.rennweg.at)
+ */
 
 public class MainClass extends Application {
 
     public static File file;
-    public static String passHashed;
 
     @Override
     public void start(Stage stage) {
@@ -34,6 +32,68 @@ public class MainClass extends Application {
         //createDatabase(stage);
     }
 
+    /**
+     * Starts the main stage (First stage on program start)
+     * @param stage
+     */
+    public static void startStage(Stage stage) {
+        GridPane grid = new GridPane();
+        Scene scene = new Scene(grid);
+        stage.setMinWidth(400);
+        stage.setMinHeight(300);
+
+        grid.setAlignment(Pos.CENTER);
+
+        grid.setGridLinesVisible(false);
+
+        Label title = new Label("JPassLocker");
+        title.setFont(new Font(45));
+        title.setAlignment(Pos.CENTER);
+        GridPane.setHalignment(title, HPos.CENTER);
+
+        Label pathLabel = new Label();
+
+        Button exit = new Button("Exit");
+        Button open = new Button("Open");
+        Button create = new Button("Create New Database");
+
+        exit.prefWidthProperty().bind(grid.widthProperty().subtract(50));
+        open.prefWidthProperty().bind(grid.widthProperty().subtract(50));
+        create.prefWidthProperty().bind(grid.widthProperty().subtract(50));
+
+
+        open.setOnAction(actionEvent -> {
+            try{
+                FileChooser fileDialog = new FileChooser();
+                File file = fileDialog.showOpenDialog(stage);
+                pathLabel.setText(file.getAbsolutePath());
+            }catch (Exception e){
+                System.out.println("No File opened");
+            }
+        });
+
+        create.setOnAction(actionEvent -> {stage.setScene(createDatabase(stage));} );
+        exit.setOnAction(actionEvent -> {System.exit(0);});
+
+
+        grid.add(title,0,0);
+        grid.add(pathLabel,0,1);
+        grid.add(create,0,2);
+        grid.add(open,0,3);
+        grid.add(exit,0,4);
+
+        grid.setVgap(10);
+
+
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    /**
+     * Scene for creating a new database
+     * @param stage
+     * @return
+     */
     public static Scene createDatabase(Stage stage){
         GridPane gridDatabase = new GridPane();
         Scene sceneDatabase = new Scene(gridDatabase);
@@ -106,7 +166,6 @@ public class MainClass extends Application {
                 );
 
                 databaseFileBegin.write(databaseNameInput.getText() + System.lineSeparator());
-                passHashed = String.valueOf(passwordInput.getText().hashCode() + System.lineSeparator());
                 databaseFileBegin.write(passwordInput.getText().hashCode() + System.lineSeparator());
                 databaseFileBegin.close();
 
@@ -114,6 +173,7 @@ public class MainClass extends Application {
                 throw new RuntimeException(e);
             }
         });
+
 
         gridDatabase.setVgap(10);
         gridDatabase.add(databaseTitle,0,1);
@@ -126,67 +186,11 @@ public class MainClass extends Application {
     }
 
 
-    public static void startStage(Stage stage) {
-        GridPane grid = new GridPane();
-        Scene scene = new Scene(grid);
-        stage.setMinWidth(400);
-        stage.setMinHeight(300);
-
-        grid.setAlignment(Pos.CENTER);
-
-        grid.setGridLinesVisible(false);
-
-        Label title = new Label("JPassLocker");
-        title.setFont(new Font(45));
-        title.setAlignment(Pos.CENTER);
-        GridPane.setHalignment(title, HPos.CENTER);
-
-        Label pathLabel = new Label();
-
-        Button exit = new Button("Exit");
-        Button open = new Button("Open");
-        Button create = new Button("Create New Database");
-
-        exit.prefWidthProperty().bind(grid.widthProperty().subtract(50));
-        open.prefWidthProperty().bind(grid.widthProperty().subtract(50));
-        create.prefWidthProperty().bind(grid.widthProperty().subtract(50));
-
-
-        open.setOnAction(actionEvent -> {
-            try{
-                FileChooser fileDialog = new FileChooser();
-                File file = fileDialog.showOpenDialog(stage);
-                pathLabel.setText(file.getAbsolutePath());
-            }catch (Exception e){
-                System.out.println("No File opened");
-            }
-        });
-
-        create.setOnAction(actionEvent -> {stage.setScene(createDatabase(stage));} );
-        exit.setOnAction(actionEvent -> {System.exit(0);});
-
-
-        grid.add(title,0,0);
-        grid.add(pathLabel,0,1);
-        grid.add(create,0,2);
-        grid.add(open,0,3);
-        grid.add(exit,0,4);
-
-        grid.setVgap(10);
-
-
-        stage.setScene(scene);
-        stage.show();
-
-
-        /**
-         * Create Database Scene
-         */
-
-        GridPane createDataBaseGrid = new GridPane();
-        Scene createDatabase = new Scene(createDataBaseGrid);
-    }
-
+    /**
+     * Calculates the entropy of a password for the password strength bar
+     * @param password
+     * @return
+     */
     public static double calculatePasswordEntropy(String password) {
         String charSet = "";
         if (password.matches(".*[a-z].*")) {
