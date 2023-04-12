@@ -12,165 +12,172 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 public class PasswordEditor extends Application {
-    public static File file;
-    public static String masterpassword;
-    public static Label categoryName = new Label("Press any saved passwords to edit or see");
-    public static Label usernameLabel = new Label("Username");
-    public static Label passwortLabel = new Label("Password:");
-    public static TextField username = new TextField();
-    public static PasswordField password = new PasswordField();
-    public static TextField passwordUnmasked = new TextField();
-    public static CheckBox showPassword = new CheckBox("Show password");
-    public static Label passwordStrengthLabel = new Label("0");
-    public static ProgressBar passwordStrengthProgressBar = new ProgressBar(0.0001);
-    public static Button save = new Button("Save");
+    private static final double ENTROPY_THRESHOLD_1 = 28;
+    private static final double ENTROPY_THRESHOLD_2 = 36;
+    private static final double ENTROPY_THRESHOLD_3 = 60;
+    private static final double ENTROPY_THRESHOLD_4 = 128;
+
+    private Label categoryName = new Label("Press any saved passwords to edit or see");
+    private Label usernameLabel = new Label("Username");
+    private Label passwordLabel = new Label("Password:");
+    private TextField username = new TextField();
+    private PasswordField password = new PasswordField();
+    private TextField passwordUnmasked = new TextField();
+    private CheckBox showPassword = new CheckBox("Show password");
+    private Label passwordStrengthLabel = new Label("0");
+    private ProgressBar passwordStrengthProgressBar = new ProgressBar(0.0001);
+    private Button save = new Button("Save");
 
     @Override
-    public void start(Stage stage) throws Exception {
-        List<Button> buttons = new ArrayList<>();
-        buttons.add(button("Hello", "MyUsername", "MyPassword"));
-        buttons.add(button("Cisco", "Nutzername", "Aleksa"));
-        buttons.add(button("Windows", "Aleksa", "ciscocisco123"));
-        buttons.add(button("Outlook", "aleksa@email.com", "passwort"));
+    public void start(Stage stage) {
+        List<Button> buttons = List.of(
+                createButton("Hello", "MyUsername", "MyPassword"),
+                createButton("Cisco", "Nutzername", "Aleksa"),
+                createButton("Windows", "Aleksa", "ciscocisco123"),
+                createButton("Outlook", "aleksa@email.com", "passwort")
+        );
 
         window(stage, buttons);
     }
 
-    public static void window(Stage stage, List<Button> buttons){
-        VBox vBox = new VBox();
-        Scene scene = new Scene(vBox);
+    private void window(Stage stage, List<Button> buttons) {
+        VBox root = new VBox();
+        Scene scene = new Scene(root);
         stage.setMinWidth(650);
         stage.setMinHeight(350);
 
-        HBox box = new HBox();
-        ScrollPane scrollPane = new ScrollPane();
-        scrollPane.setContent(box);
+        ScrollPane buttonScrollPane = createButtonBox(buttons, root);
+        GridPane passwordEditorPane = createPasswordEditorPane(stage);
+
+        root.getChildren().addAll(buttonScrollPane, passwordEditorPane);
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    private ScrollPane createButtonBox(List<Button> buttons, VBox root) {
+        HBox buttonBox = new HBox(20);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.setPadding(new Insets(0, 20, 0, 20));
+        buttonBox.getChildren().addAll(buttons);
+
+        ScrollPane scrollPane = new ScrollPane(buttonBox);
         scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.prefWidthProperty().bind(vBox.widthProperty());
-        scrollPane.prefHeightProperty().bind(vBox.heightProperty().divide(5));
-        vBox.getChildren().add(scrollPane);
+        scrollPane.prefWidthProperty().bind(root.widthProperty());
+        scrollPane.prefHeightProperty().bind(root.heightProperty().divide(5));
+        buttonBox.prefHeightProperty().bind(scrollPane.prefHeightProperty().subtract(10));
 
-        for (int i = 0; i < buttons.size(); i++) {
-            box.getChildren().add(buttons.get(i));
-        }
-        box.setAlignment(Pos.CENTER);
+        return scrollPane;
+    }
 
-        box.setPadding(new Insets(0,20,0,20));
-        box.prefHeightProperty().bind(scrollPane.prefHeightProperty().subtract(10));
-        box.setSpacing(20);
-
-
-
-
-        GridPane pane = new GridPane();
-        GridPane.setHalignment(categoryName, HPos.CENTER);
-        pane.setVgap(5);
+    private GridPane createPasswordEditorPane(Stage stage) {
+        GridPane passwordEditorPane = new GridPane();
+        passwordEditorPane.setVgap(5);
+        passwordEditorPane.setAlignment(Pos.CENTER);
         categoryName.setFont(new Font(30));
-
-
+        GridPane.setHalignment(categoryName, HPos.CENTER);
 
         save.prefWidthProperty().bind(password.widthProperty());
-
         username.prefWidthProperty().bind(stage.widthProperty().subtract(100));
         password.prefWidthProperty().bind(stage.widthProperty().subtract(100));
         passwordStrengthProgressBar.prefWidthProperty().bind(stage.widthProperty().subtract(100));
 
-        StackPane passwordStrength = new StackPane(passwordStrengthProgressBar,passwordStrengthLabel);
+        StackPane passwordStrength = new StackPane(passwordStrengthProgressBar, passwordStrengthLabel);
+        passwordEditorPane.add(categoryName, 0, 0);
+        passwordEditorPane.add(usernameLabel, 0, 1);
+        passwordEditorPane.add(passwordLabel, 0, 3);
+        passwordEditorPane.add(username, 0, 2);
+        passwordEditorPane.add(password, 0, 4);
+        passwordEditorPane.add(passwordUnmasked, 0, 4);
+        passwordEditorPane.add(showPassword, 0, 5);
+        passwordEditorPane.add(passwordStrength, 0, 6);
+        passwordEditorPane.add(save, 0, 7);
 
-        pane.add(categoryName,0,0);
+        configurePasswordFields();
+        configureShowPasswordCheckbox();
 
-        pane.setAlignment(Pos.CENTER);
-        pane.add(usernameLabel,0,1);
-        pane.add(passwortLabel,0,3);
+        hidePasswordEditorControls();
 
-        pane.add(username,0,2);
-        pane.add(password,0,4);
-        pane.add(passwordUnmasked,0,4);
-        pane.add(showPassword,0,5);
-        pane.add(passwordStrength,0,6);
-        pane.add(save,0,7);
+        return passwordEditorPane;
+    }
 
+    private void configurePasswordFields() {
         passwordUnmasked.textProperty().addListener((observable, oldValue, newValue) -> {
             password.setText(newValue);
         });
 
         password.textProperty().addListener((observable, oldValue, newValue) -> {
-            passwordStrengthProgressBar.setProgress(MainClass.calculatePasswordEntropy(password.getText())/100 * 0.78125);
+            double entropy = MainClass.calculatePasswordEntropy(newValue);
+            updatePasswordStrength(entropy);
+
             passwordUnmasked.setText(newValue);
-
-            double entropy = MainClass.calculatePasswordEntropy(password.getText());
-
-            if(entropy < 28){
-                passwordStrengthProgressBar.setStyle("-fx-accent: darkred");
-                passwordStrengthLabel.setStyle("-fx-text-fill: black;");
-            } else if (entropy < 36) {
-                passwordStrengthProgressBar.setStyle("-fx-accent: red");
-                passwordStrengthLabel.setStyle("-fx-text-fill: black;");
-            } else if (entropy < 60) {
-                passwordStrengthProgressBar.setStyle("-fx-accent: yellow");
-                passwordStrengthLabel.setStyle("-fx-text-fill: black;");
-            } else if (entropy < 128) {
-                passwordStrengthProgressBar.setStyle("-fx-accent: green");
-                passwordStrengthLabel.setStyle("-fx-text-fill: white;");
-            } else {
-                passwordStrengthProgressBar.setStyle("-fx-accent: darkgreen");
-                passwordStrengthLabel.setStyle("-fx-text-fill: white;");
-            }
-
             passwordStrengthLabel.setText(String.valueOf(entropy));
         });
+    }
 
-        passwordUnmasked.setVisible(false);
-
-        showPassword.setOnAction(actionEvent -> {
-            if(showPassword.isSelected()){
-                password.setVisible(false);
-                passwordUnmasked.setVisible(true);
-            }else{
-                passwordUnmasked.setVisible(false);
-                password.setVisible(true);
-            }
+    private void configureShowPasswordCheckbox() {
+        showPassword.setOnAction(event -> {
+            boolean isSelected = showPassword.isSelected();
+            password.setVisible(!isSelected);
+            passwordUnmasked.setVisible(isSelected);
         });
+    }
 
+    private void hidePasswordEditorControls() {
         usernameLabel.setVisible(false);
         username.setVisible(false);
-        passwortLabel.setVisible(false);
+        passwordLabel.setVisible(false);
         password.setVisible(false);
         showPassword.setVisible(false);
         passwordStrengthProgressBar.setVisible(false);
         passwordStrengthLabel.setVisible(false);
         save.setVisible(false);
-
-        vBox.getChildren().add(pane);
-
-        stage.setScene(scene);
-        stage.show();
     }
 
-    public static Button button(String Class, String usernameString, String passwordString){
-        Button button = new Button(Class);
-        button.setOnAction(actionEvent -> {
-            categoryName.setText(Class);
+    private Button createButton(String className, String usernameString, String passwordString) {
+        Button button = new Button(className);
+        button.setOnAction(event -> {
+            categoryName.setText(className);
             username.setText(usernameString);
             password.setText(passwordString);
 
             usernameLabel.setVisible(true);
             username.setVisible(true);
-            passwortLabel.setVisible(true);
+            passwordLabel.setVisible(true);
             password.setVisible(true);
             showPassword.setVisible(true);
             passwordStrengthProgressBar.setVisible(true);
             passwordStrengthLabel.setVisible(true);
             save.setVisible(true);
-
         });
 
         return button;
+    }
+
+    private void updatePasswordStrength(double entropy) {
+        passwordStrengthProgressBar.setProgress(entropy / 100 * 0.78125);
+
+        if (entropy < ENTROPY_THRESHOLD_1) {
+            applyPasswordStrengthStyle("-fx-accent: darkred", "-fx-text-fill: black;");
+        } else if (entropy < ENTROPY_THRESHOLD_2) {
+            applyPasswordStrengthStyle("-fx-accent: red", "-fx-text-fill: black;");
+        } else if (entropy < ENTROPY_THRESHOLD_3) {
+            applyPasswordStrengthStyle("-fx-accent: yellow", "-fx-text-fill: black;");
+        } else if (entropy < ENTROPY_THRESHOLD_4) {
+            applyPasswordStrengthStyle("-fx-accent: green", "-fx-text-fill: white;");
+        } else {
+            applyPasswordStrengthStyle("-fx-accent: darkgreen", "-fx-text-fill: white;");
+        }
+    }
+
+    private void applyPasswordStrengthStyle(String progressBarStyle, String labelStyle) {
+        passwordStrengthProgressBar.setStyle(progressBarStyle);
+        passwordStrengthLabel.setStyle(labelStyle);
     }
 }
