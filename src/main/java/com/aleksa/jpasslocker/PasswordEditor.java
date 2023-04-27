@@ -12,6 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import com.aleksa.jpasslocker.EncryptDecrypt;
 
 import java.io.File;
 import java.util.ArrayList;
