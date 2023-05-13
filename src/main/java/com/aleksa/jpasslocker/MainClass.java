@@ -2,26 +2,20 @@ package com.aleksa.jpasslocker;
 
 import javafx.application.Application;
 import javafx.geometry.HPos;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
-import javafx.scene.layout.*;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import com.aleksa.jpasslocker.EncryptDecrypt.*;
-import com.aleksa.jpasslocker.openDatabase.*;
-import com.aleksa.jpasslocker.createDatabase.*;
 
-import static com.aleksa.jpasslocker.GlobalVariables.*;
+import java.io.File;
+
+import static com.aleksa.jpasslocker.GlobalVariables.file;
+import static com.aleksa.jpasslocker.GlobalVariables.mainStage;
 
 /**
  * @author Nikolic Aleksa (aleksa.nikolic@htl.rennweg.at)
@@ -31,8 +25,8 @@ public class MainClass extends Application {
 
     @Override
     public void start(Stage stage) {
-        startStage(stage);
-        //createDatabase(stage);
+        mainStage = stage;
+        startStage(mainStage);
     }
 
     /**
@@ -70,7 +64,7 @@ public class MainClass extends Application {
             while (!succes){
                 try{
                     FileChooser fileDialog = new FileChooser();
-                    fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("JPassLocker Database", "jpldb"));
+                    //fileDialog.getExtensionFilters().add(new FileChooser.ExtensionFilter("JPassLocker Database", ".jpldb"));
                     fileDialog.setInitialDirectory(new File(System.getProperty("user.home")));
                     file = fileDialog.showOpenDialog(stage);
                     pathLabel.setText(file.getAbsolutePath());
@@ -81,7 +75,7 @@ public class MainClass extends Application {
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setHeaderText("Wrong file ending");
                     alert.setContentText("Please choose a file with a .jpldb ending");
-                    alert.showAndWait();
+                    alert.showAndWait(); 
                 }catch (NullPointerException e){
                     System.out.println("No File selected");
                     break;

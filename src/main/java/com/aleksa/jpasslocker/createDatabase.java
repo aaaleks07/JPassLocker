@@ -15,8 +15,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import com.aleksa.jpasslocker.*;
-import com.aleksa.jpasslocker.GlobalVariables.*;
 
 import static com.aleksa.jpasslocker.GlobalVariables.file;
 

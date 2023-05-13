@@ -12,11 +12,11 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
-import com.aleksa.jpasslocker.EncryptDecrypt;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+
+import static com.aleksa.jpasslocker.GlobalVariables.*;
 
 public class PasswordEditor extends Application {
     private static final double ENTROPY_THRESHOLD_1 = 28;
@@ -35,30 +35,23 @@ public class PasswordEditor extends Application {
     private ProgressBar passwordStrengthProgressBar = new ProgressBar(0.0001);
     private Button save = new Button("Save");
 
-    @Override
-    public void start(Stage stage) {
-        List<Button> buttons = List.of(
-                createButton("Hello", "MyUsername", "MyPassword"),
-                createButton("Cisco", "Nutzername", "Aleksa"),
-                createButton("Windows", "Aleksa", "ciscocisco123"),
-                createButton("Outlook", "aleksa@email.com", "passwort")
-        );
-
-        window(stage, buttons);
-    }
-
-    private void window(Stage stage, List<Button> buttons) {
+    public void window() {
         VBox root = new VBox();
         Scene scene = new Scene(root);
-        stage.setMinWidth(650);
-        stage.setMinHeight(350);
+        mainStage.setMinWidth(650);
+        mainStage.setMinHeight(400);
 
-        ScrollPane buttonScrollPane = createButtonBox(buttons, root);
-        GridPane passwordEditorPane = createPasswordEditorPane(stage);
+        for (int i = 1; i < allData.size(); i++) {
+            String[] data = allData.get(i).split(";");
+            allButtons.add(createButton(i));
+        }
+
+        ScrollPane buttonScrollPane = createButtonBox(allButtons, root);
+        GridPane passwordEditorPane = createPasswordEditorPane(mainStage);
 
         root.getChildren().addAll(buttonScrollPane, passwordEditorPane);
-        stage.setScene(scene);
-        stage.show();
+        mainStage.setScene(scene);
+        mainStage.show();
     }
 
     private ScrollPane createButtonBox(List<Button> buttons, VBox root) {
@@ -122,9 +115,9 @@ public class PasswordEditor extends Application {
         });
     }
 
+    boolean isSelected = showPassword.isSelected();
     private void configureShowPasswordCheckbox() {
         showPassword.setOnAction(event -> {
-            boolean isSelected = showPassword.isSelected();
             password.setVisible(!isSelected);
             passwordUnmasked.setVisible(isSelected);
         });
@@ -136,17 +129,18 @@ public class PasswordEditor extends Application {
         passwordLabel.setVisible(false);
         password.setVisible(false);
         showPassword.setVisible(false);
+        passwordUnmasked.setVisible(false);
         passwordStrengthProgressBar.setVisible(false);
         passwordStrengthLabel.setVisible(false);
         save.setVisible(false);
     }
 
-    private Button createButton(String className, String usernameString, String passwordString) {
-        Button button = new Button(className);
+    private Button createButton(int id) {
+        Button button = new Button(allData.get(id).split(";")[0]);
         button.setOnAction(event -> {
-            categoryName.setText(className);
-            username.setText(usernameString);
-            password.setText(passwordString);
+            categoryName.setText(allData.get(id).split(";")[0]);
+            username.setText(allData.get(id).split(";")[1]);
+            password.setText(allData.get(id).split(";")[2]);
 
             usernameLabel.setVisible(true);
             username.setVisible(true);
@@ -156,6 +150,22 @@ public class PasswordEditor extends Application {
             passwordStrengthProgressBar.setVisible(true);
             passwordStrengthLabel.setVisible(true);
             save.setVisible(true);
+
+            save.setOnAction(actionEvent -> {
+                String usernameString = username.getText();
+
+                if(Objects.equals(username.getText(), "")){
+                    username.setText("");
+                }
+                if(Objects.equals(password.getText(), "") || Objects.equals(passwordUnmasked.getText(), "")){
+                    password.setText("");
+                    passwordUnmasked.setText("");
+                }
+                //TODO Delete System.out.println()
+                System.out.println(username.getText());
+                allData.set(id, categoryName.getText() + ";" + username.getText() + ";" + password.getText());
+                Save.toFile();
+            });
         });
 
         return button;
@@ -180,5 +190,10 @@ public class PasswordEditor extends Application {
     private void applyPasswordStrengthStyle(String progressBarStyle, String labelStyle) {
         passwordStrengthProgressBar.setStyle(progressBarStyle);
         passwordStrengthLabel.setStyle(labelStyle);
+    }
+
+    @Override
+    public void start(Stage stage) throws Exception {
+
     }
 }
