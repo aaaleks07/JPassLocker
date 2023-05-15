@@ -26,7 +26,7 @@ public class openDatabase {
 
         Label title = new Label("Enter password");
         title.setFont(new Font(25));
-        Label subtitle = new Label("for FILENAME");
+        Label subtitle = new Label("for " + fileName);
         subtitle.setFont(new Font(15));
         VBox box = new VBox(title,subtitle);
         box.setAlignment(Pos.CENTER);

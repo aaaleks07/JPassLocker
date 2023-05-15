@@ -69,6 +69,7 @@ public class MainClass extends Application {
                     file = fileDialog.showOpenDialog(stage);
                     pathLabel.setText(file.getAbsolutePath());
                     GlobalVariables.setAllVariables(file.toPath());
+                    GlobalVariables.fileName = file.getName();
                     succes = true;
                 }catch (IllegalArgumentException e){
                     System.out.println("Wrong file ending");

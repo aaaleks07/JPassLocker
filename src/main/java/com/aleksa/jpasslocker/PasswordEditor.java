@@ -1,7 +1,6 @@
 package com.aleksa.jpasslocker;
 
 import javafx.application.Application;
-import javafx.event.Event;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -14,13 +13,14 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Objects;
 
 import static com.aleksa.jpasslocker.GlobalVariables.*;
 
 // TODO Clear ScrollPane buttonScrollPane on new creation of password
-public class PasswordEditor extends Application {
+public class PasswordEditor {
     private static final double ENTROPY_THRESHOLD_1 = 28;
     private static final double ENTROPY_THRESHOLD_2 = 36;
     private static final double ENTROPY_THRESHOLD_3 = 60;
@@ -39,13 +39,14 @@ public class PasswordEditor extends Application {
     private ProgressBar passwordStrengthProgressBar = new ProgressBar(0.0001);
     private Button save = new Button("Save");
     private Button remove = new Button("Remove");
+    private Button generateSafePwd = new Button("Generate safe password");
     VBox root = new VBox();
     ScrollPane buttonScrollPane;
 
     public void window() {
         root = new VBox();
         Scene scene = new Scene(root);
-        mainStage.setMinWidth(650);
+        mainStage.setMinWidth(700);
         mainStage.setMinHeight(500);
 
         //TODO ToDelete System.out.println()
@@ -110,6 +111,7 @@ public class PasswordEditor extends Application {
         username.prefWidthProperty().bind(stage.widthProperty().subtract(100));
         password.prefWidthProperty().bind(stage.widthProperty().subtract(100));
         passwordStrengthProgressBar.prefWidthProperty().bind(stage.widthProperty().subtract(100));
+        generateSafePwd.prefWidthProperty().bind(passwordStrengthProgressBar.widthProperty());
 
         StackPane passwordStrength = new StackPane(passwordStrengthProgressBar, passwordStrengthLabel);
         passwordEditorPane.add(categoryName, 0, 0);
@@ -124,6 +126,7 @@ public class PasswordEditor extends Application {
         passwordEditorPane.add(passwordStrength, 0, 8);
         passwordEditorPane.add(save, 0, 9);
         passwordEditorPane.add(remove, 0, 10);
+        passwordEditorPane.add(generateSafePwd, 0, 11);
 
         configurePasswordFields();
         configureShowPasswordCheckbox();
@@ -143,17 +146,18 @@ public class PasswordEditor extends Application {
             updatePasswordStrength(entropy);
 
             passwordUnmasked.setText(newValue);
-            passwordStrengthLabel.setText(String.valueOf(entropy));
+            passwordStrengthLabel.setText(String.valueOf(Math.round(entropy)));
         });
     }
 
-    boolean isSelected = showPassword.isSelected();
     private void configureShowPasswordCheckbox() {
         showPassword.setOnAction(event -> {
-            password.setVisible(!isSelected);
-            passwordUnmasked.setVisible(isSelected);
+            password.setVisible(!showPassword.isSelected());
+            passwordUnmasked.setVisible(showPassword.isSelected());
+            root.layout();
         });
     }
+
 
     private void hidePasswordEditorControls() {
         categoryNameInputLabel.setVisible(false);
@@ -168,9 +172,15 @@ public class PasswordEditor extends Application {
         passwordStrengthLabel.setVisible(false);
         save.setVisible(false);
         remove.setVisible(false);
+        generateSafePwd.setVisible(false);
+
+        root.layout();
     }
 
+
+    //TODO Work on remove!
     private Button createButton(int id) {
+
         Button button = new Button(allData.get(id).split(";")[0]);
         button.setOnAction(event -> {
             categoryName.setText(allData.get(id).split(";")[0]);
@@ -188,6 +198,7 @@ public class PasswordEditor extends Application {
             passwordStrengthLabel.setVisible(true);
             save.setVisible(true);
             remove.setVisible(true);
+            generateSafePwd.setVisible(true);
 
             save.setOnAction(actionEvent -> {
 
@@ -203,8 +214,11 @@ public class PasswordEditor extends Application {
                 }
                 //TODO Delete System.out.println()
                 System.out.println(username.getText());
-                allData.set(id, categoryName.getText() + ";" + username.getText() + ";" + password.getText());
+                allData.set(id, categoryNameInput.getText() + ";" + username.getText() + ";" + password.getText());
+                categoryName.setText(categoryNameInput.getText());
                 Save.toFile();
+
+                updateButtonNames();
             });
 
             remove.setOnAction(actionEvent -> {
@@ -216,12 +230,73 @@ public class PasswordEditor extends Application {
                     buttonBox.getChildren().remove(i);
                     hidePasswordEditorControls();
                     categoryName.setText("Press any saved passwords to edit or see");
+
+                    updateButtonNames();
                 }
+
+                updateButtonNames();
+                loadPasswordsFromList();
+            });
+
+            generateSafePwd.setOnAction(actionEvent -> {
+                password.setText(PasswordGenerator.generatePassword(19));
+            });
+
+            password.setVisible(true);
+            passwordUnmasked.setVisible(false);
+            showPassword.setSelected(false);
+
+            categoryName.setText(allData.get(id).split(";")[0]);
+            categoryNameInput.setText(allData.get(id).split(";")[0]);
+            updateButtonNames();
+
+            categoryNameInput.textProperty().addListener((observable, oldValue, newValue) -> {
+                categoryName.setText(newValue);
             });
         });
 
         return button;
     }
+
+    private void loadPasswordsFromList() {
+        categoryName.setText("");
+        categoryNameInputLabel.setVisible(false);
+        categoryNameInput.setVisible(false);
+        usernameLabel.setVisible(false);
+        username.setVisible(false);
+        passwordLabel.setVisible(false);
+        password.setVisible(false);
+        showPassword.setVisible(false);
+        passwordUnmasked.setVisible(false);
+        passwordStrengthProgressBar.setVisible(false);
+        passwordStrengthLabel.setVisible(false);
+        save.setVisible(false);
+        remove.setVisible(false);
+
+        for (int i = 0; i < allButtons.size(); i++) {
+            Button button = allButtons.get(i);
+            button.setOnAction(null);
+        }
+
+        allButtons.clear();
+
+        for (int i = 1; i < allData.size(); i++) {
+            Button button = createButton(i);
+            allButtons.add(button);
+        }
+
+        buttonScrollPane.setContent(createButtonBox(allButtons, root));
+    }
+
+
+    private void updateButtonNames() {
+        for (int i = 0; i < allButtons.size(); i++) {
+            Button button = allButtons.get(i);
+            String categoryName = allData.get(i + 1).split(";")[0];
+            button.setText(categoryName);
+        }
+    }
+
 
     private void updatePasswordStrength(double entropy) {
         passwordStrengthProgressBar.setProgress(entropy / 100 * 0.78125);
@@ -242,9 +317,5 @@ public class PasswordEditor extends Application {
     private void applyPasswordStrengthStyle(String progressBarStyle, String labelStyle) {
         passwordStrengthProgressBar.setStyle(progressBarStyle);
         passwordStrengthLabel.setStyle(labelStyle);
-    }
-
-    @Override
-    public void start(Stage stage) throws Exception {
     }
 }
