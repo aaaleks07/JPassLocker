@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import static com.aleksa.jpasslocker.GlobalVariables.file;
+import static com.aleksa.jpasslocker.GlobalVariables.mainStage;
 
 public class createDatabase {
     /**
@@ -78,6 +79,7 @@ public class createDatabase {
             /**
              * DEBUGGING
              */
+            //TODO Delete System.out.println();
             System.out.println(GlobalVariables.password);
         });
         VBox passwordBox = new VBox(password,passwordInput);
@@ -109,6 +111,9 @@ public class createDatabase {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+
+
+            mainStage.setScene(openDatabase.openDatabase());
         });
 
 

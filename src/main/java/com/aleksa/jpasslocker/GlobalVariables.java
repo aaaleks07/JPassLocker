@@ -13,7 +13,7 @@ public class GlobalVariables {
 
     public static Stage mainStage;
     public static String fileName;
-    public static String password = "password";
+    public static String password;
     public static Map<String, List<String>> allPasswordData;
     public static List<String> allData = new ArrayList<>();
     public static List<Button> allButtons = new ArrayList<>();

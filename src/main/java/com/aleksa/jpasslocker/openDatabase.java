@@ -46,6 +46,7 @@ public class openDatabase {
             try {
                 allData = OpenFileData.allDecryptedData(file.toPath(), password.getText());
                 System.out.println(allData);
+                GlobalVariables.password = password.getText();
                 PasswordEditor pe = new PasswordEditor();
                 pe.window();
             } catch (Exception e) {
