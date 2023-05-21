@@ -6,6 +6,7 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -49,9 +50,6 @@ public class PasswordEditor {
         mainStage.setMinWidth(700);
         mainStage.setMinHeight(500);
 
-        //TODO ToDelete System.out.println()
-        System.out.println("AllData:\n" + allData);
-
         for (int i = 1; i < allData.size(); i++) {
             allButtons.add(createButton(i));
         }
@@ -59,7 +57,11 @@ public class PasswordEditor {
         buttonScrollPane = createButtonBox(allButtons, root);
         System.out.println("AllButtons:\n" + allButtons);
         Button addNew = new Button("+");
-        addNew.setOnAction(actionEvent -> createNewPassword());
+        addNew.setOnAction(actionEvent -> {
+            createNewPassword();
+            updateButtonNames();
+            loadPasswordsFromList();
+        });
         addNew.setFont(new Font(20));
         addNew.minWidthProperty().bind(addNew.heightProperty());
         addNew.minHeightProperty().bind(buttonScrollPane.heightProperty());
@@ -76,10 +78,6 @@ public class PasswordEditor {
         allData.add("NewPassword;username;password");
         Button newButton = createButton(allData.size()-1);
         allButtons.add(newButton);
-        HBox buttonBox = (HBox)buttonScrollPane.getContent();
-        buttonBox.getChildren().add(newButton);
-        //TODO Delete System.out.println()
-        System.out.println("created");
     }
 
 
@@ -106,12 +104,12 @@ public class PasswordEditor {
         categoryName.setFont(new Font(30));
         GridPane.setHalignment(categoryName, HPos.CENTER);
 
-        save.prefWidthProperty().bind(password.widthProperty());
-        remove.prefWidthProperty().bind(password.widthProperty());
+        save.prefWidthProperty().bind(stage.widthProperty().subtract(100));
+        remove.prefWidthProperty().bind(save.widthProperty());
         username.prefWidthProperty().bind(stage.widthProperty().subtract(100));
         password.prefWidthProperty().bind(stage.widthProperty().subtract(100));
         passwordStrengthProgressBar.prefWidthProperty().bind(stage.widthProperty().subtract(100));
-        generateSafePwd.prefWidthProperty().bind(passwordStrengthProgressBar.widthProperty());
+        generateSafePwd.prefWidthProperty().bind(save.widthProperty());
 
         StackPane passwordStrength = new StackPane(passwordStrengthProgressBar, passwordStrengthLabel);
         passwordEditorPane.add(categoryName, 0, 0);
@@ -127,6 +125,31 @@ public class PasswordEditor {
         passwordEditorPane.add(save, 0, 9);
         passwordEditorPane.add(remove, 0, 10);
         passwordEditorPane.add(generateSafePwd, 0, 11);
+
+        categoryNameInput.setOnKeyPressed(keyEvent -> {
+            if(keyEvent.getCode() == KeyCode.ENTER){
+                save.fire();
+            }
+        });
+
+        username.setOnKeyPressed(keyEvent -> {
+            if(keyEvent.getCode() == KeyCode.ENTER){
+                save.fire();
+            }
+        });
+
+        password.setOnKeyPressed(keyEvent -> {
+            if(keyEvent.getCode() == KeyCode.ENTER){
+                save.fire();
+            }
+        });
+
+        passwordUnmasked.setOnKeyPressed(keyEvent -> {
+            if(keyEvent.getCode() == KeyCode.ENTER){
+                save.fire();
+            }
+        });
+
 
         configurePasswordFields();
         configureShowPasswordCheckbox();
@@ -178,7 +201,6 @@ public class PasswordEditor {
     }
 
 
-    //TODO Work on remove!
     private Button createButton(int id) {
 
         Button button = new Button(allData.get(id).split(";")[0]);
@@ -212,8 +234,7 @@ public class PasswordEditor {
                     password.setText("");
                     passwordUnmasked.setText("");
                 }
-                //TODO Delete System.out.println()
-                System.out.println(username.getText());
+
                 allData.set(id, categoryNameInput.getText() + ";" + username.getText() + ";" + password.getText());
                 categoryName.setText(categoryNameInput.getText());
                 Save.toFile();
@@ -221,13 +242,12 @@ public class PasswordEditor {
                 updateButtonNames();
             });
 
+
             remove.setOnAction(actionEvent -> {
-                int i = id;
-                if (i <= allButtons.size()) {
-                    allData.remove(i);
-                    allButtons.remove(i);
-                    HBox buttonBox = (HBox) buttonScrollPane.getContent();
-                    buttonBox.getChildren().remove(i);
+
+                if (id < allData.size()) {
+                    allData.remove(id);
+                    allButtons.remove(id -1);
                     hidePasswordEditorControls();
                     categoryName.setText("Press any saved passwords to edit or see");
 
@@ -272,6 +292,7 @@ public class PasswordEditor {
         passwordStrengthLabel.setVisible(false);
         save.setVisible(false);
         remove.setVisible(false);
+        generateSafePwd.setVisible(false);
 
         for (int i = 0; i < allButtons.size(); i++) {
             Button button = allButtons.get(i);

@@ -13,6 +13,7 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import java.io.File;
+import java.util.Objects;
 
 import static com.aleksa.jpasslocker.GlobalVariables.file;
 import static com.aleksa.jpasslocker.GlobalVariables.mainStage;
@@ -33,7 +34,7 @@ public class MainClass extends Application {
      * Starts the main stage (First stage on program start)
      * @param stage
      */
-    public static void startStage(Stage stage) {
+    public void startStage(Stage stage) {
         GridPane grid = new GridPane();
         Scene scene = new Scene(grid);
         stage.setMinWidth(400);
