@@ -9,10 +9,6 @@ import java.util.Arrays;
 import java.util.List;
 
 public class OpenFileData {
-    public static void main(String[] args) throws Exception {
-        System.out.println(allDecryptedData(Path.of("test.jpldb"), "passwort"));
-    }
-
     public static List<String> allDecryptedData(Path path, String password) throws Exception {
         BufferedReader file = Files.newBufferedReader(
                 Paths.get(path.toUri())

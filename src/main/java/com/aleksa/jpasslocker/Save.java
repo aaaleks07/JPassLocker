@@ -39,7 +39,5 @@ public class Save {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        System.out.println(encrypted);
     }
 }

@@ -55,7 +55,6 @@ public class PasswordEditor {
         }
 
         buttonScrollPane = createButtonBox(allButtons, root);
-        System.out.println("AllButtons:\n" + allButtons);
         Button addNew = new Button("+");
         addNew.setOnAction(actionEvent -> {
             createNewPassword();

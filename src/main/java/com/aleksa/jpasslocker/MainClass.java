@@ -73,14 +73,10 @@ public class MainClass extends Application {
                     GlobalVariables.fileName = file.getName();
                     succes = true;
                 }catch (IllegalArgumentException e){
-                    System.out.println("Wrong file ending");
                     Alert alert = new Alert(Alert.AlertType.ERROR);
                     alert.setHeaderText("Wrong file ending");
                     alert.setContentText("Please choose a file with a .jpldb ending");
                     alert.showAndWait(); 
-                }catch (NullPointerException e){
-                    System.out.println("No File selected");
-                    break;
                 }
             }
 

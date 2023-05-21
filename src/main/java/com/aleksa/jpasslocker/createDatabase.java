@@ -52,7 +52,6 @@ public class createDatabase {
         PasswordField passwordInput = new PasswordField();
         passwordInput.textProperty().addListener(observable -> {
             double entropy = MainClass.calculatePasswordEntropy(passwordInput.getText());
-            System.out.println(entropy);
 
             if(entropy < 28){
                 passStrengthBar.setStyle("-fx-accent: darkred");
@@ -75,12 +74,6 @@ public class createDatabase {
             passStrengthBar.setProgress(entropy/100 * 0.78125);
 
             GlobalVariables.password = passwordInput.getText();
-
-            /**
-             * DEBUGGING
-             */
-            //TODO Delete System.out.println();
-            System.out.println(GlobalVariables.password);
         });
         VBox passwordBox = new VBox(password,passwordInput);
 
