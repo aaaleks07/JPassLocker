@@ -16,8 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import static com.aleksa.jpasslocker.GlobalVariables.file;
-import static com.aleksa.jpasslocker.GlobalVariables.mainStage;
+import static com.aleksa.jpasslocker.GlobalVariables.*;
 
 public class createDatabase {
     /**
@@ -101,10 +100,11 @@ public class createDatabase {
                 databaseFileBegin.write(EncryptDecrypt.encrypt(writtenData, GlobalVariables.password));
                 databaseFileBegin.close();
 
+                fileName = file.getName();
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-
 
             mainStage.setScene(openDatabase.openDatabase());
         });

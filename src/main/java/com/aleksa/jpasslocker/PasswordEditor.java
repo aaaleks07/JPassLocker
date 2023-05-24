@@ -60,6 +60,22 @@ public class PasswordEditor {
             createNewPassword();
             updateButtonNames();
             loadPasswordsFromList();
+
+            if(categoryName.getText().equals("")){
+                categoryName.setText("");
+            }
+            if(Objects.equals(username.getText(), "")){
+                username.setText("");
+            }
+            if(Objects.equals(password.getText(), "") || Objects.equals(passwordUnmasked.getText(), "")){
+                password.setText("");
+                passwordUnmasked.setText("");
+            }
+
+            categoryName.setText(categoryNameInput.getText());
+            Save.toFile();
+
+            updateButtonNames();
         });
         addNew.setFont(new Font(20));
         addNew.minWidthProperty().bind(addNew.heightProperty());
@@ -246,7 +262,7 @@ public class PasswordEditor {
 
                 if (id < allData.size()) {
                     allData.remove(id);
-                    allButtons.remove(id -1);
+                    allButtons.remove(id - 1);
                     hidePasswordEditorControls();
                     categoryName.setText("Press any saved passwords to edit or see");
 

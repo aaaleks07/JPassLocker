@@ -18,15 +18,7 @@ public class GlobalVariables {
     public static List<String> allData = new ArrayList<>();
     public static List<Button> allButtons = new ArrayList<>();
 
-    public static File file = new File("test.jpldb");
+    public static File file;
 
     public static int triesLeft = 3;
-
-
-
-    public static void setAllVariables(Path path){
-        if(path.endsWith("jpldb")){
-            throw new IllegalArgumentException(path.toString());
-        }
-    }
 }

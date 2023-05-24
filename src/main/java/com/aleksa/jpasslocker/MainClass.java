@@ -69,7 +69,6 @@ public class MainClass extends Application {
                     fileDialog.setInitialDirectory(new File(System.getProperty("user.home")));
                     file = fileDialog.showOpenDialog(stage);
                     pathLabel.setText(file.getAbsolutePath());
-                    GlobalVariables.setAllVariables(file.toPath());
                     GlobalVariables.fileName = file.getName();
                     succes = true;
                 }catch (IllegalArgumentException e){
