@@ -7,6 +7,8 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
+import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -14,6 +16,8 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
+import java.awt.event.KeyListener;
+import java.security.Key;
 import java.security.SecureRandom;
 import java.util.List;
 import java.util.Objects;
@@ -75,8 +79,19 @@ public class PasswordEditor {
             categoryName.setText(categoryNameInput.getText());
             Save.toFile();
 
+            categoryName.setText("Press any saved passwords to edit or see");
             updateButtonNames();
         });
+
+        KeyCombination keyCombination = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_ANY);
+
+        scene.setOnKeyPressed(keyEvent -> {
+            if(keyCombination.match(keyEvent)){
+                addNew.fire();
+                allButtons.get(allButtons.size()-1).fire();
+            }
+        });
+
         addNew.setFont(new Font(20));
         addNew.minWidthProperty().bind(addNew.heightProperty());
         addNew.minHeightProperty().bind(buttonScrollPane.heightProperty());
@@ -271,6 +286,24 @@ public class PasswordEditor {
 
                 updateButtonNames();
                 loadPasswordsFromList();
+
+                if(categoryName.getText().equals("")){
+                    categoryName.setText("");
+                }
+                if(Objects.equals(username.getText(), "")){
+                    username.setText("");
+                }
+                if(Objects.equals(password.getText(), "") || Objects.equals(passwordUnmasked.getText(), "")){
+                    password.setText("");
+                    passwordUnmasked.setText("");
+                }
+
+                categoryName.setText(categoryNameInput.getText());
+                Save.toFile();
+
+                updateButtonNames();
+
+                categoryName.setText("Press any saved passwords to edit or see");
             });
 
             generateSafePwd.setOnAction(actionEvent -> {
@@ -288,6 +321,14 @@ public class PasswordEditor {
             categoryNameInput.textProperty().addListener((observable, oldValue, newValue) -> {
                 categoryName.setText(newValue);
             });
+        });
+
+        KeyCombination keyCombination = new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_ANY);
+
+        button.setOnKeyPressed(keyEvent -> {
+            if(keyCombination.match(keyEvent)){
+                remove.fire();
+            }
         });
 
         return button;

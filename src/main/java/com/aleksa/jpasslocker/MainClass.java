@@ -76,6 +76,8 @@ public class MainClass extends Application {
                     alert.setHeaderText("Wrong file ending");
                     alert.setContentText("Please choose a file with a .jpldb ending");
                     alert.showAndWait(); 
+                }catch (NullPointerException e){
+                    break;
                 }
             }
 
