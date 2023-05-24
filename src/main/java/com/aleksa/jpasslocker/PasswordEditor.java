@@ -45,6 +45,7 @@ public class PasswordEditor {
     private Button save = new Button("Save");
     private Button remove = new Button("Remove");
     private Button generateSafePwd = new Button("Generate safe password");
+    private boolean passwordOpen;
     VBox root = new VBox();
     ScrollPane buttonScrollPane;
 
@@ -83,10 +84,8 @@ public class PasswordEditor {
             updateButtonNames();
         });
 
-        KeyCombination keyCombination = new KeyCodeCombination(KeyCode.N, KeyCombination.CONTROL_ANY);
-
         scene.setOnKeyPressed(keyEvent -> {
-            if(keyCombination.match(keyEvent)){
+            if(keyEvent.getCode() == KeyCode.N && keyEvent.isControlDown()){
                 addNew.fire();
                 allButtons.get(allButtons.size()-1).fire();
             }
@@ -274,7 +273,6 @@ public class PasswordEditor {
 
 
             remove.setOnAction(actionEvent -> {
-
                 if (id < allData.size()) {
                     allData.remove(id);
                     allButtons.remove(id - 1);
@@ -286,17 +284,6 @@ public class PasswordEditor {
 
                 updateButtonNames();
                 loadPasswordsFromList();
-
-                if(categoryName.getText().equals("")){
-                    categoryName.setText("");
-                }
-                if(Objects.equals(username.getText(), "")){
-                    username.setText("");
-                }
-                if(Objects.equals(password.getText(), "") || Objects.equals(passwordUnmasked.getText(), "")){
-                    password.setText("");
-                    passwordUnmasked.setText("");
-                }
 
                 categoryName.setText(categoryNameInput.getText());
                 Save.toFile();
@@ -323,10 +310,8 @@ public class PasswordEditor {
             });
         });
 
-        KeyCombination keyCombination = new KeyCodeCombination(KeyCode.D, KeyCombination.CONTROL_ANY);
-
         button.setOnKeyPressed(keyEvent -> {
-            if(keyCombination.match(keyEvent)){
+            if(keyEvent.getCode() == KeyCode.DELETE){
                 remove.fire();
             }
         });
