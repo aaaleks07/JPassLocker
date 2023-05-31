@@ -1,14 +1,13 @@
 package com.aleksa.jpasslocker;
 
-import javafx.application.Application;
+import javafx.fxml.FXML;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyCodeCombination;
-import javafx.scene.input.KeyCombination;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -16,15 +15,12 @@ import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
-import java.awt.event.KeyListener;
-import java.security.Key;
-import java.security.SecureRandom;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
 import static com.aleksa.jpasslocker.GlobalVariables.*;
 
-// TODO Clear ScrollPane buttonScrollPane on new creation of password
 public class PasswordEditor {
     private static final double ENTROPY_THRESHOLD_1 = 28;
     private static final double ENTROPY_THRESHOLD_2 = 36;
@@ -46,21 +42,29 @@ public class PasswordEditor {
     private Button remove = new Button("Remove");
     private Button generateSafePwd = new Button("Generate safe password");
     private boolean passwordOpen;
-    VBox root = new VBox();
+    GridPane root = new GridPane();
     ScrollPane buttonScrollPane;
 
     public void window() {
-        root = new VBox();
+        root = new GridPane();
         Scene scene = new Scene(root);
-        mainStage.setMinWidth(700);
+        mainStage.setMinWidth(900);
         mainStage.setMinHeight(500);
 
         for (int i = 1; i < allData.size(); i++) {
             allButtons.add(createButton(i));
         }
 
-        buttonScrollPane = createButtonBox(allButtons, root);
+        buttonScrollPane = createButtonBox(allButtons);
         Button addNew = new Button("+");
+        Button help = new Button("Help");
+        VBox topButtons = new VBox(addNew, help);
+        topButtons.setSpacing(2);
+        topButtons.maxWidthProperty().bind(root.widthProperty().divide(5));
+        GridPane.setHalignment(buttonScrollPane, HPos.CENTER);
+        GridPane.setValignment(buttonScrollPane, VPos.CENTER);
+
+        help.setOnAction(actionEvent -> mainStage.setScene(helpScene(scene)));
         addNew.setOnAction(actionEvent -> {
             createNewPassword();
             updateButtonNames();
@@ -89,18 +93,85 @@ public class PasswordEditor {
                 addNew.fire();
                 allButtons.get(allButtons.size()-1).fire();
             }
+
+            if(keyEvent.getCode() == KeyCode.H && keyEvent.isControlDown()){
+                help.fire();
+            }
         });
 
         addNew.setFont(new Font(20));
-        addNew.minWidthProperty().bind(addNew.heightProperty());
-        addNew.minHeightProperty().bind(buttonScrollPane.heightProperty());
 
-        HBox topBar = new HBox(addNew, remove,buttonScrollPane);
+        VBox sideBar = new VBox(topButtons, remove,buttonScrollPane);
         GridPane passwordEditorPane = createPasswordEditorPane(mainStage);
+        passwordEditorPane.setPadding(new Insets(0,0,80,60));
 
-        root.getChildren().addAll(topBar, passwordEditorPane);
+        addNew.prefWidthProperty().bind(help.widthProperty().add(100));
+        help.prefWidthProperty().bind(addNew.widthProperty());
+
+        addNew.prefHeightProperty().bind(help.heightProperty());
+        help.prefHeightProperty().bind(addNew.heightProperty());
+
+        root.add(sideBar,0,0);
+        root.add(passwordEditorPane,1,0);
+        root.prefWidthProperty().bind(scene.widthProperty());
+
         mainStage.setScene(scene);
         mainStage.show();
+
+        //passwordEditorPane.setGridLinesVisible(true);
+        //root.setGridLinesVisible(true);
+    }
+
+
+    //TODO HelpScene
+    public Scene helpScene(Scene oldScene){
+        GridPane pane = new GridPane();
+        VBox box = new VBox();
+        Scene helpScene = new Scene(box);
+
+        Label title = new Label("All Keyboard shortcuts");
+
+        List<Label> ctrlLabel = new ArrayList<>();
+        ctrlLabel.add(new Label("CTRL+H"));
+        ctrlLabel.add(new Label("CTRL+N"));
+        ctrlLabel.add(new Label("ENTF / DEL"));
+
+        List<Label> nameLabel = new ArrayList<>();
+        nameLabel.add(new Label("Opens this Help-Page"));
+        nameLabel.add(new Label("Create a new Password-Field"));
+        nameLabel.add(new Label("Delete the open Password-Field"));
+
+
+        int fontSize = 15;
+        for (int i = 0; i < ctrlLabel.size(); i++) {
+            pane.add(ctrlLabel.get(i), 0,i);
+            GridPane.setHalignment(ctrlLabel.get(i), HPos.RIGHT);
+        }
+
+        for (int i = 0; i < nameLabel.size(); i++) {
+            pane.add(nameLabel.get(i), 1,i);
+            nameLabel.get(i).setFont(new Font(fontSize));
+        }
+
+        title.setFont(new Font(fontSize+5));
+
+        pane.setVgap(10);
+        pane.setHgap(10);
+        pane.setAlignment(Pos.CENTER);
+        GridPane.setHalignment(title,HPos.CENTER);
+        pane.setGridLinesVisible(false);
+
+        box.setAlignment(Pos.CENTER);
+        box.setSpacing(20);
+        title.setAlignment(Pos.TOP_CENTER);
+
+        Button back = new Button("Go Back");
+        back.setOnAction(actionEvent -> mainStage.setScene(oldScene));
+        back.prefWidthProperty().bind(title.widthProperty());
+
+        box.getChildren().addAll(title, pane);
+        box.getChildren().add(back);
+        return helpScene;
     }
 
     private void createNewPassword(){
@@ -110,20 +181,28 @@ public class PasswordEditor {
     }
 
 
-    private ScrollPane createButtonBox(List<Button> buttons, VBox root) {
-        HBox buttonBox = new HBox(20);
+    private ScrollPane createButtonBox(List<Button> buttons) {
+        VBox buttonBox = new VBox(20);
         buttonBox.setAlignment(Pos.CENTER);
-        buttonBox.setPadding(new Insets(0, 20, 0, 20));
         buttonBox.getChildren().addAll(buttons);
 
         ScrollPane scrollPane = new ScrollPane(buttonBox);
-        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
-        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
-        scrollPane.prefWidthProperty().bind(root.widthProperty());
-        scrollPane.prefHeightProperty().bind(root.heightProperty().divide(5));
-        buttonBox.prefHeightProperty().bind(scrollPane.prefHeightProperty().subtract(10));
-
+        scrollPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+        scrollPane.prefWidthProperty().bind(root.widthProperty().divide(3));
+        scrollPane.prefHeightProperty().bind(root.heightProperty());
+        scrollPane.maxWidthProperty().bind(root.widthProperty().divide(5));
+        scrollPane.minHeightProperty().bind(root.heightProperty());
+        buttonBox.prefWidthProperty().bind(scrollPane.widthProperty().subtract(16));
         return scrollPane;
+    }
+
+    private VBox createButtonVBox(List<Button> buttons) {
+        VBox buttonBox = new VBox(20);
+        buttonBox.setAlignment(Pos.CENTER);
+        buttonBox.getChildren().addAll(buttons);
+        buttonBox.prefWidthProperty().bind(buttonScrollPane.widthProperty().subtract(16));
+        return buttonBox;
     }
 
     private GridPane createPasswordEditorPane(Stage stage) {
@@ -133,12 +212,19 @@ public class PasswordEditor {
         categoryName.setFont(new Font(30));
         GridPane.setHalignment(categoryName, HPos.CENTER);
 
-        save.prefWidthProperty().bind(stage.widthProperty().subtract(100));
+        save.prefWidthProperty().bind(passwordEditorPane.widthProperty().subtract(100));
         remove.prefWidthProperty().bind(save.widthProperty());
-        username.prefWidthProperty().bind(stage.widthProperty().subtract(100));
-        password.prefWidthProperty().bind(stage.widthProperty().subtract(100));
-        passwordStrengthProgressBar.prefWidthProperty().bind(stage.widthProperty().subtract(100));
+        username.prefWidthProperty().bind(mainStage.widthProperty().subtract(300));
+        password.prefWidthProperty().bind(mainStage.widthProperty().subtract(300));
+        passwordStrengthProgressBar.prefWidthProperty().bind(mainStage.widthProperty().subtract(300));
         generateSafePwd.prefWidthProperty().bind(save.widthProperty());
+
+        GridPane.setHalignment(save, HPos.CENTER);
+        GridPane.setHalignment(remove, HPos.CENTER);
+        GridPane.setHalignment(username, HPos.CENTER);
+        GridPane.setHalignment(password, HPos.CENTER);
+        GridPane.setHalignment(passwordStrengthLabel, HPos.CENTER);
+        GridPane.setHalignment(generateSafePwd, HPos.CENTER);
 
         StackPane passwordStrength = new StackPane(passwordStrengthProgressBar, passwordStrengthLabel);
         passwordEditorPane.add(categoryName, 0, 0);
@@ -337,7 +423,7 @@ public class PasswordEditor {
 
         for (int i = 0; i < allButtons.size(); i++) {
             Button button = allButtons.get(i);
-            button.setOnAction(null);
+            button.setOnAction(null); // Entferne die Aktion des Buttons
         }
 
         allButtons.clear();
@@ -347,9 +433,8 @@ public class PasswordEditor {
             allButtons.add(button);
         }
 
-        buttonScrollPane.setContent(createButtonBox(allButtons, root));
+        buttonScrollPane.setContent(createButtonVBox(allButtons));
     }
-
 
     private void updateButtonNames() {
         for (int i = 0; i < allButtons.size(); i++) {
@@ -358,7 +443,6 @@ public class PasswordEditor {
             button.setText(categoryName);
         }
     }
-
 
     private void updatePasswordStrength(double entropy) {
         passwordStrengthProgressBar.setProgress(entropy / 100 * 0.78125);
