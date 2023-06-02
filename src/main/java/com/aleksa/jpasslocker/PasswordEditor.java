@@ -8,10 +8,8 @@ import javafx.geometry.VPos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.GridPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Paint;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
@@ -48,6 +46,7 @@ public class PasswordEditor {
     public void window() {
         root = new GridPane();
         Scene scene = new Scene(root);
+        mainStage.setTitle(allData.get(0));
         mainStage.setMinWidth(900);
         mainStage.setMinHeight(500);
 
@@ -55,12 +54,18 @@ public class PasswordEditor {
             allButtons.add(createButton(i));
         }
 
+        for (int i = 0; i < allButtons.size(); i++) {
+            allButtons.get(i).setStyle( "-fx-background-color: #E0E0E0;" +
+                                        "-fx-border-radius: 10px;");
+        }
+
         buttonScrollPane = createButtonBox(allButtons);
-        Button addNew = new Button("+");
+        Button addNew = new Button("Add new");
         Button help = new Button("Help");
-        VBox topButtons = new VBox(addNew, help);
+        VBox topButtons = new VBox(addNew);
         topButtons.setSpacing(2);
-        topButtons.maxWidthProperty().bind(root.widthProperty().divide(5));
+        addNew.prefWidthProperty().bind(buttonScrollPane.widthProperty());
+        addNew.setStyle("-fx-background-color: #B0BEC5;");
         GridPane.setHalignment(buttonScrollPane, HPos.CENTER);
         GridPane.setValignment(buttonScrollPane, VPos.CENTER);
 
@@ -99,14 +104,12 @@ public class PasswordEditor {
             }
         });
 
-        addNew.setFont(new Font(20));
+        addNew.setFont(new Font(18));
 
         VBox sideBar = new VBox(topButtons, remove,buttonScrollPane);
         GridPane passwordEditorPane = createPasswordEditorPane(mainStage);
         passwordEditorPane.setPadding(new Insets(0,0,80,60));
 
-        addNew.prefWidthProperty().bind(help.widthProperty().add(100));
-        help.prefWidthProperty().bind(addNew.widthProperty());
 
         addNew.prefHeightProperty().bind(help.heightProperty());
         help.prefHeightProperty().bind(addNew.heightProperty());
@@ -117,9 +120,6 @@ public class PasswordEditor {
 
         mainStage.setScene(scene);
         mainStage.show();
-
-        //passwordEditorPane.setGridLinesVisible(true);
-        //root.setGridLinesVisible(true);
     }
 
 
@@ -182,7 +182,7 @@ public class PasswordEditor {
 
 
     private ScrollPane createButtonBox(List<Button> buttons) {
-        VBox buttonBox = new VBox(20);
+        VBox buttonBox = new VBox(15);
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.getChildren().addAll(buttons);
 
@@ -194,14 +194,16 @@ public class PasswordEditor {
         scrollPane.maxWidthProperty().bind(root.widthProperty().divide(5));
         scrollPane.minHeightProperty().bind(root.heightProperty());
         buttonBox.prefWidthProperty().bind(scrollPane.widthProperty().subtract(16));
+        buttonBox.setPadding(new Insets(20,0,0,0));
         return scrollPane;
     }
 
     private VBox createButtonVBox(List<Button> buttons) {
-        VBox buttonBox = new VBox(20);
+        VBox buttonBox = new VBox(15);
         buttonBox.setAlignment(Pos.CENTER);
         buttonBox.getChildren().addAll(buttons);
         buttonBox.prefWidthProperty().bind(buttonScrollPane.widthProperty().subtract(16));
+        buttonBox.setPadding(new Insets(20,0,0,0));
         return buttonBox;
     }
 
@@ -402,6 +404,8 @@ public class PasswordEditor {
             }
         });
 
+        button.setPrefWidth(Double.MAX_VALUE);
+
         return button;
     }
 
@@ -441,6 +445,8 @@ public class PasswordEditor {
             Button button = allButtons.get(i);
             String categoryName = allData.get(i + 1).split(";")[0];
             button.setText(categoryName);
+            allButtons.get(i).setStyle( "-fx-background-color: #E0E0E0;" +
+                    "-fx-border-radius: 10px;");
         }
     }
 

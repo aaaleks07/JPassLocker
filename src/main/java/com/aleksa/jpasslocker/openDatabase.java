@@ -6,6 +6,7 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Font;
@@ -41,6 +42,12 @@ public class openDatabase {
         pane.add(box,0,0);
         pane.add(password,0,1);
         pane.add(submit,0,2);
+
+        password.setOnKeyPressed(keyEvent -> {
+            if(keyEvent.getCode() == KeyCode.ENTER){
+                submit.fire();
+            }
+        });
 
         submit.setOnAction(actionEvent -> {
             try {
